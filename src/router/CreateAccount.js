@@ -1,13 +1,14 @@
 const express = require("express");
 const mysql = require("../model/connectDb");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken"); 
-
+const jwt = require("jsonwebtoken");
 const router = express.Router();
+
+// Defina sua chave secreta para o JWT em uma variável de ambiente ou arquivo de configuração.
+const secretKey = "seuSegredoAqui"; // Substitua pela sua chave secreta
 
 router.post("/api/createAccount", (req, res) => {
     const { username, email, phone_number, password } = req.body;
-
     const saltRounds = 10;
 
     bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
@@ -17,7 +18,7 @@ router.post("/api/createAccount", (req, res) => {
         }
 
         const query = "INSERT INTO users (username, email, phone_number, password) VALUES (?, ?, ?, ?)";
-        const values = [username, email, phone_number, hashedPassword]; 
+        const values = [username, email, phone_number, hashedPassword];
 
         mysql.query(query, values, (error, results) => {
             if (error) {
@@ -26,10 +27,10 @@ router.post("/api/createAccount", (req, res) => {
             } else {
                 console.log("Usuário inserido com sucesso. ID:", results.insertId);
 
-                // Gere um token após o cadastro bem-sucedido
-                const token = jwt.sign({ username }, "seuSegredoAqui", { expiresIn: "1h" });
+                // Gere um token JWT após o cadastro bem-sucedido
+                const token = jwt.sign({ username }, secretKey, { expiresIn: "1h" });
 
-                // Retorne o token no corpo da resposta
+                // Token no corpo da resposta
                 res.status(201).json({ message: "Conta criada com sucesso", token });
             }
         });
